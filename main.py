@@ -29,7 +29,7 @@ def zero_shot_classification(email):
        Category:"""
 
     response = client.chat.completions.create(
-               model="meta-llama/llama-4-scout-17b-16e-instruct",
+               model="openai/gpt-oss-120b",
                messages=[{"role": "user", "content": prompt}],
                temperature=0.1,
                max_tokens=50
@@ -64,19 +64,46 @@ Email: {email}
 Category:"""
 
     response = client.chat.completions.create(
-                   # model="meta-llama/llama-4-scout-17b-16e-instruct",
-                   model="openai/gpt-oss-20b",
+                   model="openai/gpt-oss-120b",
                    messages=[{"role": "user", "content": prompt}],
                    temperature=0.1,
                    max_tokens=100
             )
     return response.choices[0].message.content.strip()
 
+def chain_of_thought_analysis(email):
+    """
+    Ask model to show its reasoning step by step. 
+    Good For: Complex decision making, debugging, transparency in production.
+    """
+    prompt = f"""
+    Analyze this customer email step by step
+
+    Email: {email}
+
+    Think through this step by step:
+        1. What is the main issue or request?
+        2. What category does this belongs to (Billing/Technical/Sales)?
+        3. What is the urgency level (Low/Medium/High)?
+        4. What sentiment does the customer express?
+    (Note: You can only select one at max while choosing between the category and urgency level.)
+    Provide you analysis:"""
+
+    response = client.chat.completions.create(
+            model="openai/gpt-oss-120b",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            max_tokens=250,
+            )
+    return response.choices[0].message.content.strip()
+
+
+
 # ==================== DEMO ALL TECHNIQUES ====================
 def demo_all_techniques():
     """Run all techniques on sample emails to compare approaches."""
     
-    test_email = sample_emails[2]  
+    test_email = sample_emails[1]  
     
     print("=" * 70)
     print("TEST EMAIL:")
@@ -89,15 +116,15 @@ def demo_all_techniques():
     # print(f"Result: {result}")
 
     # Few-shot
-    print("\n2. FEW-SHOT (With examples):")
-    result = few_shot_classification(test_email)
-    print(f"Result: {result}")
+    # print("\n2. FEW-SHOT (With examples):")
+    # result = few_shot_classification(test_email)
+    # print(f"Result: {result}")
 
-    # # Chain of Thought
-    # print("\n3. CHAIN OF THOUGHT (Step-by-step reasoning):")
-    # result = chain_of_thought_analysis(test_email)
-    # print(f"Result:\n{result}")
-    # 
+    # Chain of Thought
+    print("\n3. CHAIN OF THOUGHT (Step-by-step reasoning):")
+    result = chain_of_thought_analysis(test_email)
+    print(f"Result:\n{result}")
+
     # # Multi-step
     # print("\n4. MULTI-STEP (Sequential API calls):")
     # result = multi_step_classification(test_email)
